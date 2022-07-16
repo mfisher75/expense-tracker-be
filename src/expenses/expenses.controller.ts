@@ -1,5 +1,6 @@
+import { MongoIdPipe } from 'src/common/pipes/mongo-id.pipe';
 import { ExpensesService } from './expenses.service';
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes} from '@nestjs/common';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 
@@ -13,8 +14,8 @@ export class ExpensesController {
     }
 
     @Get(':id')
+    @UsePipes(MongoIdPipe)
     async getExpenseByID(@Param('id') id:string) {
-        this._validateID(id);
         return await this.expensesService.getExpenseByID(id);
     }
     
@@ -25,22 +26,13 @@ export class ExpensesController {
     }
 
     @Put(':id')
-    async updateExpense(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto) {
-        this._validateID(id);
+    async updateExpense(@Param('id', MongoIdPipe) id: string, @Body() updateExpenseDto: UpdateExpenseDto) {
         return this.expensesService.updateExpense(id, updateExpenseDto);
     }
 
     @Delete(':id')
+    @UsePipes(MongoIdPipe)
     async removeExpense(@Param('id') id: string) {
-        this._validateID(id);
         return this.expensesService.removeExpense(id);
-    }
-
-
-    private _validateID(id: string):void {
-        //valid MongoDB id RegExp
-        if (/^[0-9a-fA-F]{24}$/.test(id) === false) {
-            throw new BadRequestException('id parameter is malformed');
-        }
     }
 }
